@@ -1,16 +1,12 @@
 import { NextResponse } from "next/server";
-import { adminDb } from "@/lib/firebase-admin";
+import { db } from "@/lib/firebase-client";
+import { collection, getDocs } from "firebase/firestore";
 
 export async function GET() {
   try {
-    const docRef = await adminDb.collection("ping-test").add({
-      ok: true,
-      time: new Date().toISOString(),
-    });
-    return NextResponse.json({ success: true, id: docRef.id });
-  } catch (err: unknown) {
-    const message =
-      err instanceof Error ? err.message : "Unexpected server error";
-    return NextResponse.json({ success: false, error: message }, { status: 500 });
+    const snap = await getDocs(collection(db, "students"));
+    return NextResponse.json({ ok: true, count: snap.size });
+  } catch (err: any) {
+    return NextResponse.json({ ok: false, error: err.message });
   }
 }
