@@ -30,11 +30,24 @@ export default function TeacherAttendanceReport() {
       try {
         const user = auth.currentUser;
         if (!user) return;
+
         const tokenResult = await getIdTokenResult(user);
-        const teacherArea = tokenResult.claims.area || "";
+        const teacherArea = (tokenResult.claims?.area as string) || "";
+
+        // ✅ Safe string assignment
         setArea(teacherArea);
 
-        const q = query(collection(db, "areas", teacherArea, "attendance"), orderBy("date", "desc"));
+        if (!teacherArea) {
+          console.warn("No area assigned to this teacher.");
+          setLoading(false);
+          return;
+        }
+
+        // ✅ Query only if area is valid
+        const q = query(
+          collection(db, "areas", teacherArea, "attendance"),
+          orderBy("date", "desc")
+        );
         const snap = await getDocs(q);
 
         const all: AttendanceRecord[] = [];
@@ -49,14 +62,14 @@ export default function TeacherAttendanceReport() {
         setRecords(all);
         setFiltered(all);
       } catch (e) {
-        console.error(e);
+        console.error("Error fetching attendance:", e);
       } finally {
         setLoading(false);
       }
     })();
   }, []);
 
-  // Filter by date range
+  // ✅ Filter by date range
   useEffect(() => {
     if (!startDate && !endDate) {
       setFiltered(records);
@@ -72,29 +85,33 @@ export default function TeacherAttendanceReport() {
     }
   }, [startDate, endDate, records]);
 
+  // ✅ Export Excel
   function exportExcel() {
     const ws = XLSX.utils.json_to_sheet(filtered);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Attendance");
-    XLSX.writeFile(wb, `attendance-${area}.xlsx`);
+    XLSX.writeFile(wb, `attendance-${area || "unknown"}.xlsx`);
   }
 
+  // ✅ Export PDF
   function exportPDF() {
     const doc = new jsPDF();
-    doc.text(`Attendance Report (${area})`, 14, 16);
+    doc.text(`Attendance Report (${area || "N/A"})`, 14, 16);
     autoTable(doc, {
       startY: 20,
       head: [["Date", "Student", "Status"]],
       body: filtered.map((r) => [r.date, r.studentName, r.status]),
     });
-    doc.save(`attendance-${area}.pdf`);
+    doc.save(`attendance-${area || "unknown"}.pdf`);
   }
 
   if (loading) return <p className="text-center mt-10">Loading attendance...</p>;
 
   return (
     <main className="max-w-5xl mx-auto mt-10 bg-white p-6 rounded-lg shadow">
-      <h1 className="text-2xl font-semibold mb-4">Attendance Report ({area})</h1>
+      <h1 className="text-2xl font-semibold mb-4">
+        Attendance Report {area ? `(${area})` : ""}
+      </h1>
 
       <div className="flex flex-wrap gap-3 mb-4">
         <DatePicker
@@ -126,7 +143,13 @@ export default function TeacherAttendanceReport() {
             <tr key={i}>
               <td className="border p-2">{r.date}</td>
               <td className="border p-2">{r.studentName}</td>
-              <td className={`border p-2 ${r.status === "Absent" ? "text-red-500" : "text-green-600"}`}>
+              <td
+                className={`border p-2 ${
+                  r.status === "Absent"
+                    ? "text-red-500"
+                    : "text-green-600"
+                }`}
+              >
                 {r.status}
               </td>
             </tr>

@@ -235,19 +235,25 @@ export default function AttendanceAnalytics() {
             </thead>
             <tbody>
               {studentSorted.map((s, i) => {
-                const percent = ((s.presentDays / s.totalDays) * 100).toFixed(1);
+                const percent = (s.presentDays / s.totalDays) * 100;
+                const percentText = percent.toFixed(1); // Keep formatted string for display
+
                 return (
-                  <tr key={i}>
+                    <tr key={i}>
                     <td className="border p-2">{s.studentName}</td>
                     <td className="border p-2">{s.area}</td>
                     <td className="border p-2">{s.totalDays}</td>
                     <td className="border p-2">{s.presentDays}</td>
-                    <td className={`border p-2 ${percent < 75 ? "text-red-600" : "text-green-600"}`}>
-                      {percent}%
+                    <td
+                        className={`border p-2 ${
+                        percent < 75 ? "text-red-600" : "text-green-600"
+                        }`}
+                    >
+                        {percentText}%
                     </td>
-                  </tr>
+                    </tr>
                 );
-              })}
+                })}
             </tbody>
           </table>
         </div>
