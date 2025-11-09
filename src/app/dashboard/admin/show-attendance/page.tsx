@@ -24,7 +24,6 @@ export default function AdminAttendanceReport() {
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
   const [filtered, setFiltered] = useState<AttendanceRecord[]>([]);
   const [loading, setLoading] = useState(true);
-
   const [selectedArea, setSelectedArea] = useState("All");
   const [search, setSearch] = useState("");
   const [startDate, setStartDate] = useState<Date | null>(null);
@@ -59,18 +58,14 @@ export default function AdminAttendanceReport() {
 
   useEffect(() => {
     fetchAttendance();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedArea]);
 
   useEffect(() => {
     let filteredData = [...records];
-
-    if (search) {
+    if (search)
       filteredData = filteredData.filter((r) =>
         r.studentName.toLowerCase().includes(search.toLowerCase())
       );
-    }
-
     if (startDate || endDate) {
       filteredData = filteredData.filter((r) => {
         const d = new Date(r.date);
@@ -79,7 +74,6 @@ export default function AdminAttendanceReport() {
         return true;
       });
     }
-
     setFiltered(filteredData);
   }, [records, search, startDate, endDate]);
 
@@ -104,12 +98,14 @@ export default function AdminAttendanceReport() {
   if (loading) return <p className="text-center mt-10">Loading attendance...</p>;
 
   return (
-    <main className="max-w-6xl mx-auto mt-10 bg-white p-6 rounded-lg shadow">
-      <h1 className="text-2xl font-semibold mb-4">All Attendance Reports</h1>
+    <main className="max-w-6xl mx-auto mt-10 bg-white p-4 sm:p-6 rounded-lg shadow">
+      <h1 className="text-xl sm:text-2xl font-semibold mb-4 text-center sm:text-left">
+        Attendance Reports
+      </h1>
 
       <div className="flex flex-wrap gap-3 mb-4">
         <select
-          className="border p-2 rounded"
+          className="border p-2 rounded w-full sm:w-auto"
           value={selectedArea}
           onChange={(e) => setSelectedArea(e.target.value)}
         >
@@ -124,51 +120,54 @@ export default function AdminAttendanceReport() {
           placeholder="Search student name..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
+          className="flex-1"
         />
 
         <DatePicker
           selected={startDate}
           onChange={(d) => setStartDate(d)}
           placeholderText="Start Date"
-          className="border p-2 rounded"
+          className="border p-2 rounded w-full sm:w-auto"
         />
         <DatePicker
           selected={endDate}
           onChange={(d) => setEndDate(d)}
           placeholderText="End Date"
-          className="border p-2 rounded"
+          className="border p-2 rounded w-full sm:w-auto"
         />
 
         <Button onClick={exportExcel}>Export Excel</Button>
         <Button onClick={exportPDF}>Export PDF</Button>
       </div>
 
-      <table className="w-full border text-sm">
-        <thead className="bg-gray-100">
-          <tr>
-            <th className="border p-2">Date</th>
-            <th className="border p-2">Area</th>
-            <th className="border p-2">Student</th>
-            <th className="border p-2">Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filtered.map((r, i) => (
-            <tr key={i}>
-              <td className="border p-2">{r.date}</td>
-              <td className="border p-2">{r.area}</td>
-              <td className="border p-2">{r.studentName}</td>
-              <td
-                className={`border p-2 ${
-                  r.status === "Absent" ? "text-red-500" : "text-green-600"
-                }`}
-              >
-                {r.status}
-              </td>
+      <div className="overflow-x-auto -mx-2 sm:mx-0">
+        <table className="min-w-full text-xs sm:text-sm border-collapse border">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="border p-2">Date</th>
+              <th className="border p-2">Area</th>
+              <th className="border p-2">Student</th>
+              <th className="border p-2">Status</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {filtered.map((r, i) => (
+              <tr key={i} className="text-center">
+                <td className="border p-2">{r.date}</td>
+                <td className="border p-2">{r.area}</td>
+                <td className="border p-2">{r.studentName}</td>
+                <td
+                  className={`border p-2 ${
+                    r.status === "Absent" ? "text-red-500" : "text-green-600"
+                  }`}
+                >
+                  {r.status}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </main>
   );
 }

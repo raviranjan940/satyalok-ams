@@ -32,8 +32,7 @@ export default function AddTeacherPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-internal-secret":
-            process.env.NEXT_PUBLIC_INTERNAL_ADMIN_SECRET || "",
+          "x-internal-secret": process.env.NEXT_PUBLIC_INTERNAL_ADMIN_SECRET || "",
         },
         body: JSON.stringify(form),
       });
@@ -59,81 +58,45 @@ export default function AddTeacherPage() {
   }
 
   return (
-    <main className="max-w-xl mx-auto mt-10 bg-white p-6 rounded-lg shadow">
-      <h1 className="text-2xl font-semibold mb-4">Add Teacher</h1>
+    <main className="max-w-2xl mx-auto mt-6 bg-white p-4 sm:p-6 rounded-xl shadow-md">
+      <h1 className="text-xl sm:text-2xl font-semibold mb-4 text-center sm:text-left">
+        Add Teacher
+      </h1>
 
-      <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
-        <div className="col-span-2">
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="col-span-1 sm:col-span-2">
           <Label htmlFor="displayName">Full Name</Label>
-          <Input
-            id="displayName"
-            name="displayName"
-            value={form.displayName}
-            onChange={handleChange}
-            required
-          />
+          <Input id="displayName" name="displayName" value={form.displayName} onChange={handleChange} required />
         </div>
 
-        <div className="col-span-2">
+        <div className="col-span-1 sm:col-span-2">
           <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
-            name="email"
-            type="email"
-            value={form.email}
-            onChange={handleChange}
-            required
-          />
+          <Input id="email" name="email" type="email" value={form.email} onChange={handleChange} required />
         </div>
 
-        <div className="col-span-2">
+        <div className="col-span-1 sm:col-span-2">
           <Label htmlFor="password">Password</Label>
-          <Input
-            id="password"
-            name="password"
-            type="password"
-            value={form.password}
-            onChange={handleChange}
-            required
-          />
+          <Input id="password" name="password" type="password" value={form.password} onChange={handleChange} required />
         </div>
 
         <div>
           <Label htmlFor="phone">Phone No.</Label>
-          <Input
-            id="phone"
-            name="phone"
-            value={form.phone}
-            onChange={handleChange}
-          />
+          <Input id="phone" name="phone" value={form.phone} onChange={handleChange} />
         </div>
 
         <div>
           <Label htmlFor="gender">Gender</Label>
-          <select
-            id="gender"
-            name="gender"
-            value={form.gender}
-            onChange={handleChange}
-            className="border p-2 rounded w-full"
-          >
+          <select id="gender" name="gender" value={form.gender} onChange={handleChange} className="border p-2 rounded w-full">
             <option value="">Select</option>
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-            <option value="Other">Other</option>
+            <option>Male</option>
+            <option>Female</option>
+            <option>Other</option>
           </select>
         </div>
 
-        <div className="col-span-2">
+        <div className="col-span-1 sm:col-span-2">
           <Label htmlFor="area">Area Center</Label>
-          <select
-            id="area"
-            name="area"
-            value={form.area}
-            onChange={handleChange}
-            className="border p-2 rounded w-full"
-            required
-          >
+          <select id="area" name="area" value={form.area} onChange={handleChange} className="border p-2 rounded w-full">
             <option value="">Select Area</option>
             <option value="Swang">Swang</option>
             <option value="Kathara">Kathara</option>
@@ -143,28 +106,17 @@ export default function AddTeacherPage() {
           </select>
         </div>
 
-        <div className="col-span-2">
+        <div className="col-span-1 sm:col-span-2">
           <Label htmlFor="joinDate">Join Date</Label>
-          <Input
-            id="joinDate"
-            name="joinDate"
-            type="date"
-            value={form.joinDate}
-            onChange={handleChange}
-          />
+          <Input id="joinDate" name="joinDate" type="date" value={form.joinDate} onChange={handleChange} />
         </div>
 
-        <div className="col-span-2 mt-2">
+        <div className="col-span-1 sm:col-span-2 mt-2">
           <Button type="submit" disabled={loading} className="w-full">
             {loading ? "Creating..." : "Add Teacher"}
           </Button>
-
           {message && (
-            <p
-              className={`text-sm mt-2 text-center ${
-                message.startsWith("✅") ? "text-green-600" : "text-red-600"
-              }`}
-            >
+            <p className={`text-center mt-2 text-sm ${message.startsWith("✅") ? "text-green-600" : "text-red-600"}`}>
               {message}
             </p>
           )}

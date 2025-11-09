@@ -224,3 +224,19 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer base {
+  body {
+    @apply text-gray-800 bg-gray-50;
+  }
+  table {
+    @apply w-full border-collapse;
+  }
+  th, td {
+    @apply border p-2 text-center;
+  }
+  input, select {
+    @apply text-sm sm:text-base;
+  }
+}
+

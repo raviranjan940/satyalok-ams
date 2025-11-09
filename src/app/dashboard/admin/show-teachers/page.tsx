@@ -25,7 +25,6 @@ export default function ShowTeachersPage() {
   const [loading, setLoading] = useState(true);
   const [selectedArea, setSelectedArea] = useState("All");
 
-  // 🧠 Fetch teachers by area
   async function fetchTeachers() {
     setLoading(true);
     try {
@@ -68,8 +67,7 @@ export default function ShowTeachersPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-internal-secret":
-            process.env.NEXT_PUBLIC_INTERNAL_ADMIN_SECRET || "change-me",
+          "x-internal-secret": process.env.NEXT_PUBLIC_INTERNAL_ADMIN_SECRET || "change-me",
         },
         body: JSON.stringify({ uid, area }),
       });
@@ -85,14 +83,14 @@ export default function ShowTeachersPage() {
   };
 
   return (
-    <main className="max-w-6xl mx-auto mt-10 p-6 bg-white rounded-lg shadow">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-semibold">All Teachers</h1>
+    <main className="max-w-6xl mx-auto mt-10 p-4 sm:p-6 bg-white rounded-lg shadow">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-3">
+        <h1 className="text-xl sm:text-2xl font-semibold text-center sm:text-left">All Teachers</h1>
 
         <select
           value={selectedArea}
           onChange={(e) => setSelectedArea(e.target.value)}
-          className="border p-2 rounded"
+          className="border p-2 rounded w-full sm:w-auto"
         >
           {AREAS.map((area) => (
             <option key={area} value={area}>
@@ -105,10 +103,10 @@ export default function ShowTeachersPage() {
       {loading ? (
         <p className="text-gray-500 text-center">Loading teachers...</p>
       ) : teachers.length === 0 ? (
-        <p className="text-gray-500 text-sm">No teachers found for this area.</p>
+        <p className="text-gray-500 text-center text-sm">No teachers found for this area.</p>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full border text-sm">
+        <div className="overflow-x-auto -mx-2 sm:mx-0">
+          <table className="min-w-full text-xs sm:text-sm border-collapse border">
             <thead className="bg-gray-100">
               <tr>
                 <th className="border p-2">Name</th>
@@ -123,7 +121,7 @@ export default function ShowTeachersPage() {
             </thead>
             <tbody>
               {teachers.map((t) => (
-                <tr key={t.id}>
+                <tr key={t.id} className="text-center">
                   <td className="border p-2">{t.displayName}</td>
                   <td className="border p-2">{t.email}</td>
                   <td className="border p-2">{t.phone || "-"}</td>

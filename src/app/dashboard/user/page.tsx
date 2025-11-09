@@ -27,11 +27,13 @@ export default function TeacherDashboard() {
   ];
 
   return (
-    <main className="max-w-5xl mx-auto mt-10">
-      <h1 className="text-3xl font-bold mb-6 text-gray-800">
+    <main className="max-w-6xl mx-auto mt-10 space-y-10 px-3 sm:px-0">
+      <h1 className="text-2xl sm:text-3xl font-bold mb-4 text-gray-800 text-center sm:text-left">
         Welcome, Teacher 👋
       </h1>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+      {/* Dashboard Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {cards.map((c) => (
           <Link href={c.href} key={c.title}>
             <Card className="hover:shadow-lg transition cursor-pointer">
@@ -44,6 +46,11 @@ export default function TeacherDashboard() {
           </Link>
         ))}
       </div>
+
+      {/* Optional message or footer */}
+      <p className="text-center text-gray-400 text-sm">
+        SatyalokAMS — Manage your students and attendance with ease
+      </p>
     </main>
   );
 }
