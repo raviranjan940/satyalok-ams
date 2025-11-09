@@ -7,6 +7,7 @@ import {
   ClipboardCheck,
   UserPlus,
   ClipboardList,
+  LayoutDashboard,
   Menu,
   X,
 } from "lucide-react";
@@ -22,7 +23,9 @@ export default function UserLayout({
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  // 🧭 Navigation Items
   const navItems = [
+    { name: "Dashboard", href: "/dashboard/user", icon: LayoutDashboard },
     { name: "Add Student", href: "/dashboard/user/add-student", icon: UserPlus },
     { name: "Take Attendance", href: "/dashboard/user/take-attendance", icon: ClipboardCheck },
     { name: "Attendance Report", href: "/dashboard/user/attendance-report", icon: ClipboardList },
@@ -35,9 +38,9 @@ export default function UserLayout({
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-gray-50 relative">
       {/* 📱 Mobile Header */}
-      <header className="sm:hidden fixed top-0 left-0 right-0 z-20 bg-white border-b shadow flex items-center justify-between p-4">
+      <header className="sm:hidden fixed top-0 left-0 right-0 z-30 bg-white border-b shadow flex items-center justify-between p-4">
         <button onClick={() => setSidebarOpen(!sidebarOpen)}>
           {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
@@ -52,11 +55,11 @@ export default function UserLayout({
 
       {/* 🧭 Sidebar */}
       <aside
-        className={`fixed sm:static z-30 bg-white border-r shadow-sm flex flex-col transition-transform duration-300 ease-in-out w-64 h-screen ${
+        className={`fixed sm:static z-40 bg-white border-r shadow-sm flex flex-col transition-transform duration-300 ease-in-out w-64 h-screen ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full sm:translate-x-0"
         }`}
       >
-        {/* Sidebar Header (Desktop only) */}
+        {/* Sidebar Header (Desktop Only) */}
         <div className="px-4 py-5 border-b text-lg font-semibold text-blue-700 hidden sm:block">
           SatyalokAMS Teacher
         </div>
@@ -81,7 +84,7 @@ export default function UserLayout({
           })}
         </nav>
 
-        {/* Sticky Logout (Desktop only) */}
+        {/* 🚪 Sticky Logout (Desktop Only) */}
         <div className="hidden sm:block mt-auto border-t">
           <button
             onClick={handleLogout}
@@ -92,8 +95,16 @@ export default function UserLayout({
         </div>
       </aside>
 
-      {/* 🖥️ Main Content */}
-      <main className="flex-1 mt-14 sm:mt-0 p-4 sm:p-6 overflow-y-auto">
+      {/* 🖱️ Invisible Overlay (Click to Close Sidebar on Mobile) */}
+      {sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          className="fixed inset-0 z-30 sm:hidden cursor-pointer"
+        />
+      )}
+
+      {/* 🧾 Main Content */}
+      <main className="flex-1 mt-14 sm:mt-0 p-4 sm:p-6 overflow-y-auto relative z-10">
         {children}
       </main>
     </div>

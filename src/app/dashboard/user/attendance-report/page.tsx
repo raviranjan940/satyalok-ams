@@ -10,15 +10,7 @@ import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import "react-datepicker/dist/react-datepicker.css";
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-} from "recharts";
+import { Search, Filter } from "lucide-react";
 
 interface AttendanceRecord {
   date: string;
@@ -36,10 +28,13 @@ interface DailySummary {
 export default function TeacherAttendanceReport() {
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
   const [filtered, setFiltered] = useState<AttendanceRecord[]>([]);
+  const [displayed, setDisplayed] = useState<AttendanceRecord[]>([]);
   const [dailyData, setDailyData] = useState<DailySummary[]>([]);
   const [area, setArea] = useState<string>("");
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"All" | "Present" | "Absent">("All");
   const [loading, setLoading] = useState(true);
 
   // 🧠 Fetch and Clean Data
@@ -48,6 +43,7 @@ export default function TeacherAttendanceReport() {
       try {
         const user = auth.currentUser;
         if (!user) return;
+
         const tokenResult = await getIdTokenResult(user);
         const teacherArea = (tokenResult.claims?.area as string) || "";
         setArea(teacherArea);
@@ -82,6 +78,7 @@ export default function TeacherAttendanceReport() {
         const uniqueRecords = Array.from(uniqueMap.values());
         setRecords(uniqueRecords);
         setFiltered(uniqueRecords);
+        setDisplayed(uniqueRecords);
       } catch (e) {
         console.error(e);
       } finally {
@@ -92,22 +89,39 @@ export default function TeacherAttendanceReport() {
 
   // 🗓️ Date Filter
   useEffect(() => {
-    if (!startDate && !endDate) {
-      setFiltered(records);
-    } else {
-      setFiltered(
-        records.filter((r) => {
-          const d = new Date(r.date);
-          if (startDate && d < startDate) return false;
-          if (endDate && d > endDate) return false;
-          return true;
-        })
-      );
+    let temp = [...records];
+    if (startDate || endDate) {
+      temp = temp.filter((r) => {
+        const d = new Date(r.date);
+        if (startDate && d < startDate) return false;
+        if (endDate && d > endDate) return false;
+        return true;
+      });
     }
+    setFiltered(temp);
   }, [startDate, endDate, records]);
 
-  // 📊 Compute Daily Trend Data
+  // 🔍 Search + Status Filter
   useEffect(() => {
+    const term = searchTerm.toLowerCase().trim();
+
+    let result = filtered;
+
+    if (statusFilter !== "All") {
+      result = result.filter((r) => r.status === statusFilter);
+    }
+
+    if (term) {
+      result = result.filter((r) =>
+        r.studentName.toLowerCase().includes(term)
+      );
+    }
+
+    setDisplayed(result);
+  }, [searchTerm, statusFilter, filtered]);
+
+  // 📈 Summary Stats
+  const summary = useMemo(() => {
     const grouped: Record<string, { present: number; absent: number }> = {};
     filtered.forEach((r) => {
       if (!grouped[r.date]) grouped[r.date] = { present: 0, absent: 0 };
@@ -116,36 +130,29 @@ export default function TeacherAttendanceReport() {
         : grouped[r.date].absent++;
     });
 
-    const data: DailySummary[] = Object.entries(grouped)
-      .map(([date, { present, absent }]) => ({
-        date,
-        present,
-        absent,
-        percent: present + absent > 0 ? Math.round((present / (present + absent)) * 100) : 0,
-      }))
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    const dailySummary = Object.entries(grouped).map(([date, { present, absent }]) => ({
+      date,
+      present,
+      absent,
+      percent: present + absent > 0 ? Math.round((present / (present + absent)) * 100) : 0,
+    }));
 
-    setDailyData(data);
-  }, [filtered]);
-
-  // 📈 Summary Stats
-  const summary = useMemo(() => {
-    const totalDays = dailyData.length;
+    const totalDays = dailySummary.length;
     const totalPresent = filtered.filter((r) => r.status === "Present").length;
     const totalAbsent = filtered.filter((r) => r.status === "Absent").length;
     const avgPercent =
       totalDays > 0
         ? Math.round(
-            dailyData.reduce((sum, d) => sum + d.percent, 0) / totalDays
+            dailySummary.reduce((sum, d) => sum + d.percent, 0) / totalDays
           )
         : 0;
 
     return { totalDays, totalPresent, totalAbsent, avgPercent };
-  }, [filtered, dailyData]);
+  }, [filtered]);
 
   // 📤 Export Functions
   const exportExcel = () => {
-    const ws = XLSX.utils.json_to_sheet(filtered);
+    const ws = XLSX.utils.json_to_sheet(displayed);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Attendance");
     XLSX.writeFile(wb, `attendance-${area}.xlsx`);
@@ -157,7 +164,7 @@ export default function TeacherAttendanceReport() {
     autoTable(doc, {
       startY: 20,
       head: [["Date", "Student", "Status"]],
-      body: filtered.map((r) => [r.date, r.studentName, r.status]),
+      body: displayed.map((r) => [r.date, r.studentName, r.status]),
     });
     doc.save(`attendance-${area}.pdf`);
   };
@@ -168,7 +175,7 @@ export default function TeacherAttendanceReport() {
   return (
     <main className="max-w-6xl mx-auto mt-10 bg-white p-4 sm:p-6 rounded-lg shadow space-y-8">
       <h1 className="text-xl sm:text-2xl font-semibold text-center sm:text-left">
-        📘 Attendance Analytics {area ? `(${area})` : ""}
+        📘 Attendance Report {area ? `(${area})` : ""}
       </h1>
 
       {/* 🧾 Summary Cards */}
@@ -191,48 +198,54 @@ export default function TeacherAttendanceReport() {
         </div>
       </div>
 
-      {/* 🗓️ Filters & Exports */}
-      <div className="flex flex-wrap gap-3 mb-4 justify-center sm:justify-start">
-        <DatePicker
-          selected={startDate}
-          onChange={(d) => setStartDate(d)}
-          placeholderText="Start Date"
-          className="border p-2 rounded text-sm"
-        />
-        <DatePicker
-          selected={endDate}
-          onChange={(d) => setEndDate(d)}
-          placeholderText="End Date"
-          className="border p-2 rounded text-sm"
-        />
-        <Button onClick={exportExcel}>Export Excel</Button>
-        <Button onClick={exportPDF}>Export PDF</Button>
-      </div>
+      {/* 🗓️ Filters, Search & Status */}
+      <div className="flex flex-wrap gap-3 mb-4 justify-center sm:justify-between items-center">
+        <div className="flex flex-wrap gap-2 items-center">
+          <DatePicker
+            selected={startDate}
+            onChange={(d) => setStartDate(d)}
+            placeholderText="Start Date"
+            className="border p-2 rounded text-sm"
+          />
+          <DatePicker
+            selected={endDate}
+            onChange={(d) => setEndDate(d)}
+            placeholderText="End Date"
+            className="border p-2 rounded text-sm"
+          />
+        </div>
 
-      {/* 📊 Daily Attendance Chart */}
-      <section>
-        <h2 className="text-lg font-semibold mb-2 text-center sm:text-left">
-          📈 Daily Attendance Trend
-        </h2>
-        {dailyData.length > 0 ? (
-          <ResponsiveContainer
-            width="100%"
-            height={typeof window !== "undefined" && window.innerWidth < 640 ? 220 : 300}
+        {/* 🔍 Search Bar */}
+        <div className="flex items-center border rounded px-2 py-1 bg-gray-50">
+          <Search className="w-4 h-4 text-gray-500 mr-1" />
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search student..."
+            className="outline-none bg-transparent text-sm"
+          />
+        </div>
+
+        {/* 🧭 Status Filter */}
+        <div className="flex items-center border rounded px-2 py-1 bg-gray-50">
+          <Filter className="w-4 h-4 text-gray-500 mr-2" />
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as any)}
+            className="bg-transparent outline-none text-sm"
           >
-            <BarChart data={dailyData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
-              <YAxis domain={[0, 100]} />
-              <Tooltip />
-              <Bar dataKey="percent" name="Attendance %" fill="#3b82f6" />
-            </BarChart>
-          </ResponsiveContainer>
-        ) : (
-          <p className="text-center text-gray-500 py-10">
-            No attendance data available for selected dates.
-          </p>
-        )}
-      </section>
+            <option value="All">All</option>
+            <option value="Present">Present</option>
+            <option value="Absent">Absent</option>
+          </select>
+        </div>
+
+        <div className="flex gap-2">
+          <Button onClick={exportExcel}>Export Excel</Button>
+          <Button onClick={exportPDF}>Export PDF</Button>
+        </div>
+      </div>
 
       {/* 🧮 Detailed Table */}
       <div className="overflow-x-auto -mx-2 sm:mx-0">
@@ -245,8 +258,8 @@ export default function TeacherAttendanceReport() {
             </tr>
           </thead>
           <tbody>
-            {filtered.length > 0 ? (
-              filtered.map((r, i) => (
+            {displayed.length > 0 ? (
+              displayed.map((r, i) => (
                 <tr key={i}>
                   <td className="border p-2">{r.date}</td>
                   <td className="border p-2">{r.studentName}</td>
