@@ -18,7 +18,7 @@ export default function Footer() {
         {/* Social Icons */}
         <div className="flex items-center gap-4">
           <Link
-            href="https://github.com/your-github"
+            href="https://github.com/raviranjan940"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-blue-600 transition"
@@ -26,7 +26,7 @@ export default function Footer() {
             <Github className="w-5 h-5" />
           </Link>
           <Link
-            href="https://linkedin.com/in/your-linkedin"
+            href="https://www.linkedin.com/in/raviranjan940/"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-blue-600 transition"
@@ -34,7 +34,7 @@ export default function Footer() {
             <Linkedin className="w-5 h-5" />
           </Link>
           <Link
-            href="https://instagram.com/your-instagram"
+            href="https://www.instagram.com/raviranjan_143"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-pink-500 transition"
@@ -42,7 +42,7 @@ export default function Footer() {
             <Instagram className="w-5 h-5" />
           </Link>
           <Link
-            href="https://facebook.com/your-facebook"
+            href="https://www.facebook.com/raviranjan0940/"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-blue-600 transition"
