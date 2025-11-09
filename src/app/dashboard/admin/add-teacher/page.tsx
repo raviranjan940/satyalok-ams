@@ -33,7 +33,7 @@ export default function AddTeacherPage() {
         headers: {
           "Content-Type": "application/json",
           "x-internal-secret":
-            process.env.NEXT_PUBLIC_INTERNAL_ADMIN_SECRET || "change-me",
+            process.env.NEXT_PUBLIC_INTERNAL_ADMIN_SECRET || "",
         },
         body: JSON.stringify(form),
       });
